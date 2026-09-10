@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+model User {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  password  String
+  role      Role      @default(USER)
+  createdAt DateTime  @default(now()) @map("created_at")
+  bookings  Booking[]
+
+  @@map("users")
+}
+
+model Room {
+  id           String    @id @default(uuid())
+  name         String
+  capacity     Int
+  pricePerHour Decimal   @map("price_per_hour") @db.Decimal(10, 2)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  bookings     Booking[]
+
+  @@map("rooms")
+}
+
+model Booking {
+  id        String        @id @default(uuid())
+  userId    String        @map("user_id")
+  roomId    String        @map("room_id")
+  startTime DateTime      @map("start_time")
+  endTime   DateTime      @map("end_time")
+  status    BookingStatus @default(PENDING)
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  room Room @relation(fields: [roomId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  // Composite index to support the overlap check efficiently:
+  // WHERE roomId = ? AND startTime < endTimeParam AND endTime > startTimeParam
+  // roomId first (equality filter, high selectivity), then range columns.
+  @@index([roomId, startTime, endTime])
+  @@index([userId])
+  @@map("bookings")
+}
