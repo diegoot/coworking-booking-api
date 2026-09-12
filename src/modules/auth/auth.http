@@ -1,0 +1,60 @@
+### Auth module — manual requests (REST Client extension for VS Code)
+#
+# How to use:
+# 1. Install the "REST Client" extension (humao.rest-client) in VS Code.
+# 2. Open this file. Above each request block you'll see a small
+#    "Send Request" link — click it to fire that specific request.
+# 3. Make sure the API is running (npm run dev) before sending requests.
+# 4. Edit the values in the JSON bodies freely to try different cases.
+
+@baseUrl = http://localhost:3000
+
+### Register a new user (happy path)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Ada Lovelace",
+  "email": "ada.lovelace@example.com",
+  "password": "supersecret123"
+}
+
+### Login with the user created above
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ada.lovelace@example.com",
+  "password": "supersecret123"
+}
+
+# The request above is named "login" (see the "# @name login" comment).
+# REST Client lets you reuse its response in later requests, e.g. once
+# protected endpoints exist (bookings, rooms), you'd add a header like:
+#
+#   Authorization: Bearer {{login.response.body.$.accessToken}}
+#
+# There's nothing to attach it to yet since /rooms and /bookings aren't
+# implemented, but keep this pattern in mind for when they are.
+
+### Error case: register with an email that's already taken
+# Same email as the successful register above — expect 409 Conflict.
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Ada Lovelace (duplicate)",
+  "email": "ada.lovelace@example.com",
+  "password": "anotherpassword123"
+}
+
+### Error case: login with the wrong password
+# Correct email, wrong password — expect 401 Unauthorized.
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ada.lovelace@example.com",
+  "password": "wrongpassword"
+}

@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: false,
-    include: ["tests/**/*.test.ts"],
+    include: ["src/**/*.test.ts"],
     testTimeout: 15000,
     hookTimeout: 15000,
     // Auth integration tests hit a shared Postgres instance and each

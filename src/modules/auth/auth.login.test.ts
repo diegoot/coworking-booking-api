@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import request from "supertest";
-import { createApp } from "../../src/app.js";
-import { uniqueEmail, deleteUserByEmail } from "../helpers/db.js";
+import { createApp } from "../../app.js";
+import { uniqueEmail, deleteUserByEmail } from "../../shared/testing/db.js";
 
 const app = createApp();
 

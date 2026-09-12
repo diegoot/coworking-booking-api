@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { prisma } from "../../src/shared/db/prisma.js";
+import { prisma } from "../db/prisma.js";
 
 // Re-exported so tests needing direct Prisma access (e.g. creating a user
 // by hand to test middleware) import it from this helper instead of a
