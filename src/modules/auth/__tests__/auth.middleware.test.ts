@@ -2,11 +2,11 @@ import { describe, it, expect, afterEach } from "vitest";
 import express from "express";
 import request from "supertest";
 import jwt from "jsonwebtoken";
-import { authenticate, authorize } from "./auth.middleware.js";
-import { errorHandler } from "../../shared/errors/errorHandler.js";
-import { env } from "../../shared/config/env.js";
-import { prisma, uniqueEmail, deleteUserById } from "../../shared/testing/db.js";
-import type { AuthenticatedRequest } from "../../shared/types/auth.js";
+import { authenticate, authorize } from "../auth.middleware.js";
+import { errorHandler } from "../../../shared/errors/errorHandler.js";
+import { env } from "../../../shared/config/env.js";
+import { prisma, uniqueEmail, deleteUserById } from "../../../shared/testing/db.js";
+import type { AuthenticatedRequest } from "../../../shared/types/auth.js";
 
 // Minimal test-only app that wires the real authenticate/authorize
 // middlewares (imported from source, not reimplemented) onto throwaway
