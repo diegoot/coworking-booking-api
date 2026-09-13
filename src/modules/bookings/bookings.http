@@ -1,0 +1,214 @@
+### Bookings module — manual requests (REST Client extension for VS Code)
+#
+# How to use:
+# 1. Install the "REST Client" extension (humao.rest-client) in VS Code.
+# 2. Open this file. Above each request block you'll see a small
+#    "Send Request" link — click it to fire that specific request.
+# 3. Make sure the API is running (npm run dev) before sending requests.
+# 4. Edit the values in the JSON bodies freely to try different cases.
+
+@baseUrl = http://localhost:3000
+
+# ---------------------------------------------------------------------------
+# Tokens setup
+# ---------------------------------------------------------------------------
+# Admin token: there is no endpoint to register as ADMIN directly. Run the
+# seed script to create/update an admin user from the ADMIN_SEED_* vars
+# in .env:
+#   npm run prisma:seed
+# Then log in with those credentials via auth/auth.http (POST /auth/login,
+# using ADMIN_SEED_EMAIL/ADMIN_SEED_PASSWORD from .env) and paste the
+# returned accessToken below.
+@adminToken = replace-with-admin-token
+
+# Regular user token: register/login normally via auth/auth.http
+# (POST /auth/register then POST /auth/login) and paste the token below.
+@userToken = replace-with-user-token
+
+# ---------------------------------------------------------------------------
+# Other ids you'll need
+# ---------------------------------------------------------------------------
+# roomId: copy it from rooms.http, either from the "List all rooms" response
+# or from the room you created with "Create a room".
+@roomId = replace-with-room-id
+
+# bookingId: copy it from the response body of "Create a booking (happy
+# path)" below, once you've sent that request.
+@bookingId = replace-with-booking-id
+
+# userId: the id of the logged-in user (@userToken), used below to test
+# GET /bookings/:userId as a non-admin (should be forbidden). You can get
+# it by decoding the JWT, or from the register/login response body.
+@userId = replace-with-user-id
+
+### Create a booking (happy path)
+# Requires @userToken and @roomId to be set above.
+# Business hours are 8:00–20:00 Argentina time (America/Argentina/Buenos_Aires).
+# Using the -03:00 offset directly in the ISO string is simpler than
+# converting to UTC by hand.
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+{
+  "roomId": "{{roomId}}",
+  "startTime": "2026-09-20T10:00:00-03:00",
+  "endTime": "2026-09-20T11:00:00-03:00"
+}
+
+### Get my bookings (requires auth — any logged-in user, only their own bookings)
+# Requires @userToken to be set above.
+GET {{baseUrl}}/bookings/me
+Authorization: Bearer {{userToken}}
+
+### Get bookings for a given user (admin only)
+# Requires @adminToken and @userId to be set above.
+GET {{baseUrl}}/bookings/{{userId}}
+Authorization: Bearer {{adminToken}}
+
+### Cancel a booking (happy path — owner cancels their own booking)
+# Requires @userToken and @bookingId to be set above (see "Create a booking"
+# above to get a fresh bookingId).
+DELETE {{baseUrl}}/bookings/{{bookingId}}
+Authorization: Bearer {{userToken}}
+
+# ---------------------------------------------------------------------------
+# Error cases
+# ---------------------------------------------------------------------------
+
+### Error case: create a booking without the Authorization header
+# No token at all — expect 401 Unauthorized.
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+
+{
+  "roomId": "{{roomId}}",
+  "startTime": "2026-09-20T10:00:00-03:00",
+  "endTime": "2026-09-20T11:00:00-03:00"
+}
+
+### Error case: create a booking for a room that doesn't exist
+# Expect 404 Not Found — roomId doesn't match any existing room.
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+{
+  "roomId": "00000000-0000-0000-0000-000000000000",
+  "startTime": "2026-09-20T10:00:00-03:00",
+  "endTime": "2026-09-20T11:00:00-03:00"
+}
+
+### Error case: create a booking outside business hours (too early, 7am)
+# Expect 422 Unprocessable Entity — business hours are 8:00–20:00 Argentina time.
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+{
+  "roomId": "{{roomId}}",
+  "startTime": "2026-09-20T07:00:00-03:00",
+  "endTime": "2026-09-20T08:00:00-03:00"
+}
+
+### Error case: create a booking outside business hours (too late, ends at 9pm)
+# Expect 422 Unprocessable Entity — business hours are 8:00–20:00 Argentina time.
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+{
+  "roomId": "{{roomId}}",
+  "startTime": "2026-09-20T20:00:00-03:00",
+  "endTime": "2026-09-20T21:00:00-03:00"
+}
+
+### Error case: create a booking that crosses midnight
+# Expect 422 Unprocessable Entity — a booking must fall within a single day.
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+{
+  "roomId": "{{roomId}}",
+  "startTime": "2026-09-20T19:00:00-03:00",
+  "endTime": "2026-09-21T01:00:00-03:00"
+}
+
+### Error case: create a booking that overlaps an existing one (first request)
+# Send this one first — expect 201 Created (or reuse the happy-path
+# booking above if you already sent it with this exact time range).
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+{
+  "roomId": "{{roomId}}",
+  "startTime": "2026-09-20T14:00:00-03:00",
+  "endTime": "2026-09-20T15:00:00-03:00"
+}
+
+### Error case: create a booking that overlaps an existing one (second request)
+# Same room, overlapping time range as the request right above —
+# send this one right after it. Expect 409 Conflict.
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+{
+  "roomId": "{{roomId}}",
+  "startTime": "2026-09-20T14:30:00-03:00",
+  "endTime": "2026-09-20T15:30:00-03:00"
+}
+
+### Error case: create a booking without a roomId
+# Expect 422 Unprocessable Entity — roomId is required (Zod validation).
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+{
+  "startTime": "2026-09-20T10:00:00-03:00",
+  "endTime": "2026-09-20T11:00:00-03:00"
+}
+
+### Error case: create a booking where endTime is before startTime
+# Expect 422 Unprocessable Entity (Zod validation).
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+{
+  "roomId": "{{roomId}}",
+  "startTime": "2026-09-20T11:00:00-03:00",
+  "endTime": "2026-09-20T10:00:00-03:00"
+}
+
+### Error case: get bookings for a user without the Authorization header
+# No token at all — expect 401 Unauthorized.
+GET {{baseUrl}}/bookings/{{userId}}
+
+### Error case: get bookings for a user with a non-admin token
+# Valid token, but the user's role isn't ADMIN — expect 403 Forbidden.
+GET {{baseUrl}}/bookings/{{userId}}
+Authorization: Bearer {{userToken}}
+
+### Error case: cancel someone else's booking without being admin
+# @userToken belongs to a different user than the one who owns @bookingId —
+# expect 403 Forbidden. (To try this for real, create a second user via
+# auth.http, log in as them, and use that token here instead.)
+DELETE {{baseUrl}}/bookings/{{bookingId}}
+Authorization: Bearer {{userToken}}
+
+### Error case: cancel a booking that doesn't exist
+# Expect 404 Not Found.
+DELETE {{baseUrl}}/bookings/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{userToken}}
+
+### Error case: cancel the same booking twice
+# Send the "Cancel a booking (happy path)" request above first, then send
+# this exact same request again right after — expect 409 Conflict, since
+# cancelling is not idempotent on purpose (an already-cancelled booking
+# can't be cancelled again).
+DELETE {{baseUrl}}/bookings/{{bookingId}}
+Authorization: Bearer {{userToken}}

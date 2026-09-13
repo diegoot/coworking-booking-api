@@ -47,7 +47,7 @@ src/
 Rules for this structure:
 - Code that conceptually belongs to a module (e.g. auth.middleware.ts) stays in that module, even if other modules import it. It does NOT move to shared/ just because it's reused.
 - shared/ is only for code with no natural owner: generic utils, base types, error helpers, config.
-- Dependencies should flow toward auth/shared, not sideways between business modules. If bookings and rooms start importing from each other, flag it — that's a smell.
+- A directional dependency between business modules (e.g. bookings importing from rooms, never the other way around) is fine when it reflects a real domain relationship — a Booking already depends on Room at the data-model level (roomId), so bookings depending on rooms code is not a smell. The actual smell is a *circular* dependency: rooms importing from bookings AND bookings importing from rooms. If that happens, flag it — it means the module boundaries are unclear. Don't force something into shared/ just to avoid a legitimate one-directional import; only promote it to shared/ if it genuinely has no single natural owner (see the rule above).
 
 ## Your responsibility
 - Maintain this structure as new modules are added

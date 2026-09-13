@@ -7,7 +7,7 @@ import { fromZonedTime } from "date-fns-tz";
 import { createApp } from "../../../app.js";
 import { env } from "../../../shared/config/env.js";
 import { prisma, uniqueEmail, deleteUserById, deleteRoomById, deleteBookingById } from "../../../shared/testing/db.js";
-import { BUSINESS_TIMEZONE } from "../rooms.constants.js";
+import { BUSINESS_TIMEZONE } from "../../../shared/config/businessHours.js";
 
 const app = createApp();
 

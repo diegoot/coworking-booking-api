@@ -2,12 +2,8 @@ import { BookingStatus, type Room } from "@prisma/client";
 import { fromZonedTime } from "date-fns-tz";
 import { prisma } from "../../shared/db/prisma.js";
 import { NotFoundError } from "../../shared/errors/AppError.js";
-import {
-  BUSINESS_HOURS_START,
-  BUSINESS_HOURS_END,
-  SLOT_DURATION_HOURS,
-  BUSINESS_TIMEZONE,
-} from "./rooms.constants.js";
+import { BUSINESS_HOURS_START, BUSINESS_HOURS_END, BUSINESS_TIMEZONE } from "../../shared/config/businessHours.js";
+import { SLOT_DURATION_HOURS } from "./rooms.constants.js";
 import type { CreateRoomInput } from "./rooms.schema.js";
 
 export interface AvailabilitySlot {
@@ -30,12 +26,12 @@ export async function createRoom(input: CreateRoomInput): Promise<Room> {
   return prisma.room.create({ data: input });
 }
 
-// TODO(bookings module): when POST /bookings is implemented, validate
-// that startTime/endTime fall within 8:00-20:00 and never cross midnight
-// (see business rule 1 in AGENTS.md's Business Rules). getRoomAvailability below assumes
-// that invariant already holds for every stored booking; if it's ever
-// violated, the day-containment query here would need to go back to a
-// generic overlap check.
+// POST /bookings (see modules/bookings) validates that startTime/endTime
+// fall within 8:00-20:00 and never cross midnight (business rule 1 in
+// AGENTS.md), via shared/utils/businessHours.ts. getRoomAvailability
+// below relies on that invariant already holding for every stored
+// booking; if it's ever violated, the day-containment query here would
+// need to go back to a generic overlap check.
 export async function getRoomAvailability(
   roomId: string,
   date: string
