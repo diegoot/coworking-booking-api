@@ -23,3 +23,15 @@ export async function deleteUserById(id: string): Promise<void> {
 export async function deleteUserByEmail(email: string): Promise<void> {
   await prisma.user.deleteMany({ where: { email } });
 }
+
+// Deletes a room by id. Bookings reference rooms with onDelete: Restrict,
+// so any dependent bookings must be deleted first for this to succeed —
+// callers that create bookings against a fixture room should clean those
+// up themselves (e.g. via deleteBookingById) before calling this.
+export async function deleteRoomById(id: string): Promise<void> {
+  await prisma.room.deleteMany({ where: { id } });
+}
+
+export async function deleteBookingById(id: string): Promise<void> {
+  await prisma.booking.deleteMany({ where: { id } });
+}

@@ -1,0 +1,122 @@
+### Rooms module — manual requests (REST Client extension for VS Code)
+#
+# How to use:
+# 1. Install the "REST Client" extension (humao.rest-client) in VS Code.
+# 2. Open this file. Above each request block you'll see a small
+#    "Send Request" link — click it to fire that specific request.
+# 3. Make sure the API is running (npm run dev) before sending requests.
+# 4. Edit the values in the JSON bodies freely to try different cases.
+
+@baseUrl = http://localhost:3000
+
+# ---------------------------------------------------------------------------
+# Admin token setup (needed for POST /rooms below)
+# ---------------------------------------------------------------------------
+# There is no endpoint to register as ADMIN directly. Instead, run the seed
+# script to create/update an admin user from the ADMIN_SEED_* vars in .env:
+#   npm run prisma:seed
+# Then log in with those credentials via auth/auth.http (POST /auth/login,
+# using ADMIN_SEED_EMAIL/ADMIN_SEED_PASSWORD from .env) and paste the
+# returned accessToken below.
+@adminToken = replace-with-admin-token
+
+# Optional: a token from a regular (non-admin) user, used below to check
+# the 403 case. Get it the normal way via POST /auth/login.
+@userToken = replace-with-user-token
+
+### List all rooms (requires auth — any logged-in user, no specific role)
+# Requires @adminToken (or @userToken) to be set above.
+GET {{baseUrl}}/rooms
+Authorization: Bearer {{adminToken}}
+
+### Create a room (happy path — admin only)
+# Requires @adminToken to be set above (see setup instructions).
+POST {{baseUrl}}/rooms
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "name": "Meeting Room A",
+  "capacity": 6,
+  "pricePerHour": 15.5
+}
+
+### Availability for a room (requires auth — any logged-in user, no specific role)
+# Replace @roomId with the id of a room that already exists (e.g. copy it
+# from the response of "List all rooms" above, or from the room you just
+# created). Requires @adminToken (or @userToken) to be set above.
+@roomId = replace-with-room-id
+GET {{baseUrl}}/rooms/{{roomId}}/availability?date=2026-09-15
+Authorization: Bearer {{adminToken}}
+
+### Error case: create a room without the Authorization header
+# No token at all — expect 401 Unauthorized.
+POST {{baseUrl}}/rooms
+Content-Type: application/json
+
+{
+  "name": "Unauthorized Room",
+  "capacity": 4,
+  "pricePerHour": 10
+}
+
+### Error case: create a room with a non-admin user's token
+# Valid token, but the user's role isn't ADMIN — expect 403 Forbidden.
+# Requires @userToken to be set above.
+POST {{baseUrl}}/rooms
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+{
+  "name": "Forbidden Room",
+  "capacity": 4,
+  "pricePerHour": 10
+}
+
+### Error case: create a room with negative capacity
+# Expect 422 Unprocessable Entity — capacity must be a positive integer.
+POST {{baseUrl}}/rooms
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "name": "Negative Capacity Room",
+  "capacity": -3,
+  "pricePerHour": 10
+}
+
+### Error case: create a room with a negative pricePerHour
+# Expect 422 Unprocessable Entity — pricePerHour must be a positive number.
+POST {{baseUrl}}/rooms
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "name": "Negative Price Room",
+  "capacity": 4,
+  "pricePerHour": -15.5
+}
+
+### Error case: create a room without a name
+# Expect 422 Unprocessable Entity — name is required.
+POST {{baseUrl}}/rooms
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "capacity": 4,
+  "pricePerHour": 10
+}
+
+### Error case: availability with an invalid date format
+# Expect 422 Unprocessable Entity — date must be YYYY-MM-DD.
+GET {{baseUrl}}/rooms/{{roomId}}/availability?date=15-09-2026
+Authorization: Bearer {{adminToken}}
+
+### Error case: list rooms without the Authorization header
+# No token at all — expect 401 Unauthorized.
+GET {{baseUrl}}/rooms
+
+### Error case: availability without the Authorization header
+# No token at all — expect 401 Unauthorized.
+GET {{baseUrl}}/rooms/{{roomId}}/availability?date=2026-09-15

@@ -42,24 +42,26 @@ Booking
 
 Relations: User 1—N Booking, Room 1—N Booking.
 
-## Key Business Rule
+## Business Rules
 
-When creating a Booking, reject it if there's a time overlap for the same room:
+1. The coworking operates 8:00–20:00, Argentina time (America/Argentina/Buenos_Aires). A Booking must always fall within a single day and within these business hours — it can never span across midnight or fall outside 8:00–20:00.
 
-```
-startTime < existing.endTime AND endTime > existing.startTime
-```
+2. When creating a Booking, reject it if there's a time overlap for the same room:
 
-Return a clear error when there's a conflict.
+   ```
+   startTime < existing.endTime AND endTime > existing.startTime
+   ```
+
+   Return a clear error when there's a conflict.
 
 ## Endpoints
 
 ```
 POST   /auth/register
 POST   /auth/login
-GET    /rooms
+GET    /rooms                        (requires auth)
 POST   /rooms                        (admin only)
-GET    /rooms/:id/availability?date= (free/busy slots for that day)
+GET    /rooms/:id/availability?date= (requires auth, free/busy slots for that day)
 GET    /bookings/me                  (requires auth, own bookings only)
 GET    /bookings/:userId             (admin only, bookings for any user)
 POST   /bookings                     (requires auth, validates overlap)
