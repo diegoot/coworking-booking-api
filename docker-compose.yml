@@ -11,6 +11,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Runs only on a fresh (empty) volume, right after POSTGRES_DB is
+      # created by the base image's entrypoint. Creates the separate test
+      # database automatically, so a new setup never needs the manual
+      # `docker exec ... psql ... CREATE DATABASE` step.
+      - ./docker/init-test-db.sh:/docker-entrypoint-initdb.d/init-test-db.sh
 
 volumes:
   postgres_data:

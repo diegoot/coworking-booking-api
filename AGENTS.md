@@ -54,6 +54,8 @@ Relations: User 1—N Booking, Room 1—N Booking.
 
    Return a clear error when there's a conflict.
 
+3. Cancelling a Booking (`DELETE /bookings/:id`) is a soft delete: it sets `status` to `CANCELLED`, it never deletes the row, preserving booking history. Cancelling a Booking that is already `CANCELLED` is an error (409 Conflict), not a no-op — this action is not idempotent by design.
+
 ## Endpoints
 
 ```
