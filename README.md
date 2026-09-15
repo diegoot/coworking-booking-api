@@ -2,6 +2,29 @@
 
 Backend for a coworking room booking system.
 
+## Live Demo
+
+**⚠️ Portfolio/demo environment** — not a real production system. Data resets
+periodically and credentials below are intentionally public for reviewers.
+
+- API base URL: https://coworking-booking-api-4d55.onrender.com
+- Hosted on Render's free tier — the first request after a period of
+  inactivity may take 30-50s (cold start).
+
+### Demo credentials
+
+Admin:
+
+```json
+{ "email": "admin@example.com", "password": "Admin1234!" }
+```
+
+Sample users (password `password123` for all):
+
+- user1@example.com
+- user2@example.com
+- user3@example.com
+
 ## Stack
 
 - Node.js + Express
@@ -50,7 +73,7 @@ Backend for a coworking room booking system.
    npm run prisma:migrate
    ```
 
-   This applies the initial migration and automatically runs the seed script (configured via `"prisma": { "seed": ... }` in `package.json`), creating the admin user from `ADMIN_SEED_*`. If you ever need to re-run just the seed later, use `npm run prisma:seed`.
+   This applies the initial migration and automatically runs the seed script (configured via `"prisma": { "seed": ... }` in `package.json`) — see [Sample data](#sample-data). If you ever need to re-run just the seed later, use `npm run prisma:seed`.
 
 5. **Start the dev server**
 
@@ -73,8 +96,7 @@ Backend for a coworking room booking system.
 | `npm run prisma:migrate` | Apply Prisma migrations (dev) |
 | `npm run prisma:deploy` | Apply Prisma migrations (production) |
 | `npm run prisma:studio` | Open Prisma Studio (visual DB browser) |
-| `npm run prisma:seed` | Create/update the admin user from `ADMIN_SEED_*` env vars |
-| `npm run prisma:seed:dev` | Populate sample data (users, rooms, bookings) for local manual testing — see [Sample data](#sample-data) |
+| `npm run prisma:seed` | Reset and repopulate the DB: admin user + sample data — see [Sample data](#sample-data) |
 
 ## Project structure
 
@@ -104,18 +126,13 @@ Each module has its own `*.http` file (e.g. `src/modules/auth/auth.http`) with r
 
 ## Sample data
 
-For local manual testing (e.g. via the `.http` files), there's a separate command to populate the database with sample data — a few regular users, rooms, and bookings:
+`prisma/seed.ts` is a single script that **wipes and repopulates** the whole database: the admin user (from `ADMIN_SEED_*`) plus sample users, rooms, and bookings for manual testing (e.g. via the `.http` files):
 
 ```bash
-npm run prisma:seed:dev
+npm run prisma:seed
 ```
 
-This is **strictly a local development tool**, completely independent from `prisma/seed.ts`:
-
-- `prisma/seed.ts` is the only script wired to Prisma's `"prisma": { "seed": ... }` hook in `package.json`. It only ever creates the single admin user from `ADMIN_SEED_*`, so its content is safe to run in any environment, including production — but the automatic trigger only exists in local development: `prisma migrate dev` (used in dev, via `npm run prisma:migrate`) runs it automatically, while `prisma migrate deploy` (used in production, via `npm run prisma:deploy`) does not. In production, run it explicitly with `npm run prisma:seed` if/when you need to (re)create the admin user.
-- `prisma/seed-dev-data.ts` (run via `npm run prisma:seed:dev`) is **never** run automatically by anything — it has to be invoked by hand. There is no code path that could trigger it in production.
-
-It's idempotent: running it multiple times won't create duplicate users, rooms, or bookings.
+It's wired to Prisma's `"prisma": { "seed": ... }` hook, so it runs automatically after `prisma migrate dev` (local) and is also part of the [Live Demo](#live-demo)'s deploy build command — every deploy leaves the DB in the same clean, predictable state. That's fine here since this is a throwaway demo DB, not a real production system (see the "Data resets periodically" note above).
 
 Sample users created (role `USER`), all with password `password123`:
 
