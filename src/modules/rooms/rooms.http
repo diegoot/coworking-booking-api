@@ -6,8 +6,8 @@
 #    "Send Request" link — click it to fire that specific request.
 # 3. Make sure the API is running (npm run dev) before sending requests.
 # 4. Edit the values in the JSON bodies freely to try different cases.
-
-@baseUrl = http://localhost:3000
+# 5. baseUrl comes from the active REST Client environment (bottom-right
+#    of VS Code) — see .vscode/settings.json for "local" vs "production".
 
 # ---------------------------------------------------------------------------
 # Admin token setup (needed for POST /rooms below)
