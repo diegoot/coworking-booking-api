@@ -24,10 +24,14 @@
 # the 403 case. Get it the normal way via POST /auth/login.
 @userToken = replace-with-user-token
 
-### List all rooms (requires auth — any logged-in user, no specific role)
-# Requires @adminToken (or @userToken) to be set above.
+### List all rooms (public — no auth required)
 GET {{baseUrl}}/rooms
-Authorization: Bearer {{adminToken}}
+
+### Get a single room (public — no auth required)
+# Replace @roomId with the id of a room that already exists (e.g. copy it
+# from the response of "List all rooms" above).
+@roomId = replace-with-room-id
+GET {{baseUrl}}/rooms/{{roomId}}
 
 ### Create a room (happy path — admin only)
 # Requires @adminToken to be set above (see setup instructions).
@@ -42,10 +46,7 @@ Authorization: Bearer {{adminToken}}
 }
 
 ### Availability for a room (requires auth — any logged-in user, no specific role)
-# Replace @roomId with the id of a room that already exists (e.g. copy it
-# from the response of "List all rooms" above, or from the room you just
-# created). Requires @adminToken (or @userToken) to be set above.
-@roomId = replace-with-room-id
+# Uses the @roomId set above. Requires @adminToken (or @userToken).
 GET {{baseUrl}}/rooms/{{roomId}}/availability?date=2026-09-15
 Authorization: Bearer {{adminToken}}
 
@@ -113,9 +114,9 @@ Authorization: Bearer {{adminToken}}
 GET {{baseUrl}}/rooms/{{roomId}}/availability?date=15-09-2026
 Authorization: Bearer {{adminToken}}
 
-### Error case: list rooms without the Authorization header
-# No token at all — expect 401 Unauthorized.
-GET {{baseUrl}}/rooms
+### Error case: get a room that doesn't exist
+# Expect 404 Not Found.
+GET {{baseUrl}}/rooms/00000000-0000-0000-0000-000000000000
 
 ### Error case: availability without the Authorization header
 # No token at all — expect 401 Unauthorized.

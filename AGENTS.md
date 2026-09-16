@@ -61,7 +61,8 @@ Relations: User 1—N Booking, Room 1—N Booking.
 ```
 POST   /auth/register
 POST   /auth/login
-GET    /rooms                        (requires auth)
+GET    /rooms                        (public)
+GET    /rooms/:id                    (public)
 POST   /rooms                        (admin only)
 GET    /rooms/:id/availability?date= (requires auth, free/busy slots for that day)
 GET    /bookings/me                  (requires auth, own bookings only)

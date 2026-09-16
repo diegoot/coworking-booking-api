@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import type { ZodType } from "zod";
 import { createRoomSchema, availabilityQuerySchema } from "./rooms.schema.js";
-import { listRooms, createRoom, getRoomAvailability } from "./rooms.service.js";
+import { listRooms, getRoomById, createRoom, getRoomAvailability } from "./rooms.service.js";
 import { ValidationError } from "../../shared/errors/AppError.js";
 
 // Parses arbitrary input against the given schema, translating Zod
@@ -23,6 +23,15 @@ export async function getRooms(_req: Request, res: Response, next: NextFunction)
   try {
     const rooms = await listRooms();
     res.status(200).json(rooms);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getRoom(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const room = await getRoomById(req.params.id as string);
+    res.status(200).json(room);
   } catch (err) {
     next(err);
   }

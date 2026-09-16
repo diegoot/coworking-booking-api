@@ -1,9 +1,12 @@
 import { Router } from "express";
-import { getRooms, postRoom, getRoomAvailabilityHandler } from "./rooms.controller.js";
+import { getRooms, getRoom, postRoom, getRoomAvailabilityHandler } from "./rooms.controller.js";
 import { authenticate, authorize } from "../auth/auth.middleware.js";
 
 export const roomsRouter = Router();
 
-roomsRouter.get("/", authenticate, getRooms);
+// Public: browsing rooms never requires auth (no user-identifying data in
+// the response) — only creating a room or booking one does.
+roomsRouter.get("/", getRooms);
 roomsRouter.post("/", authenticate, authorize("ADMIN"), postRoom);
+roomsRouter.get("/:id", getRoom);
 roomsRouter.get("/:id/availability", authenticate, getRoomAvailabilityHandler);

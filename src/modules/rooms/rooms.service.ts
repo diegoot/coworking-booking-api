@@ -22,6 +22,16 @@ export async function listRooms(): Promise<Room[]> {
   return prisma.room.findMany({ orderBy: { createdAt: "asc" } });
 }
 
+export async function getRoomById(id: string): Promise<Room> {
+  const room = await prisma.room.findUnique({ where: { id } });
+
+  if (!room) {
+    throw new NotFoundError("Room not found");
+  }
+
+  return room;
+}
+
 export async function createRoom(input: CreateRoomInput): Promise<Room> {
   return prisma.room.create({ data: input });
 }
