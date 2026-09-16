@@ -2,7 +2,7 @@
   "rest-client.environmentVariables": {
     "$shared": {},
     "local": {
-      "baseUrl": "http://localhost:3000"
+      "baseUrl": "http://localhost:4000"
     },
     "production": {
       "baseUrl": "https://coworking-booking-api-4d55.onrender.com"

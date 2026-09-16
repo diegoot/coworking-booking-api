@@ -81,7 +81,7 @@ Sample users (password `password123` for all):
    npm run dev
    ```
 
-   The API listens on `http://localhost:3000` by default (`PORT` in `.env`). Check `GET /health`.
+   The API listens on `http://localhost:4000` by default (`PORT` in `.env`). Check `GET /health`.
 
 ## Scripts
 
