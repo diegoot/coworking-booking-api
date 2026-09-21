@@ -13,7 +13,6 @@ enum Role {
 }
 
 enum BookingStatus {
-  PENDING
   CONFIRMED
   CANCELLED
 }
@@ -47,7 +46,7 @@ model Booking {
   roomId    String        @map("room_id")
   startTime DateTime      @map("start_time")
   endTime   DateTime      @map("end_time")
-  status    BookingStatus @default(PENDING)
+  status    BookingStatus @default(CONFIRMED)
   createdAt DateTime      @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)

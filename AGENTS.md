@@ -36,7 +36,7 @@ Booking
 - roomId → relation to Room
 - startTime (DateTime)
 - endTime (DateTime)
-- status (enum: PENDING, CONFIRMED, CANCELLED)
+- status (enum: CONFIRMED, CANCELLED)
 - createdAt
 ```
 

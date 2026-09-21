@@ -83,7 +83,7 @@ describe("POST /bookings", () => {
     return room;
   }
 
-  it("creates a booking with PENDING status by default (happy path)", async () => {
+  it("creates a booking with CONFIRMED status by default (happy path)", async () => {
     const room = await setupRoom();
     const { token } = await setupUser();
 
@@ -97,13 +97,13 @@ describe("POST /bookings", () => {
       });
 
     expect(res.status).toBe(201);
-    expect(res.body.status).toBe("PENDING");
+    expect(res.body.status).toBe("CONFIRMED");
     expect(res.body.roomId).toBe(room.id);
     createdBookingIds.push(res.body.id);
 
     const stored = await prisma.booking.findUnique({ where: { id: res.body.id } });
     expect(stored).not.toBeNull();
-    expect(stored?.status).toBe(BookingStatus.PENDING);
+    expect(stored?.status).toBe(BookingStatus.CONFIRMED);
   });
 
   it("creates a booking when startTime/endTime use an explicit offset instead of Z (e.g. -03:00)", async () => {
@@ -123,7 +123,7 @@ describe("POST /bookings", () => {
       });
 
     expect(res.status).toBe(201);
-    expect(res.body.status).toBe("PENDING");
+    expect(res.body.status).toBe("CONFIRMED");
     createdBookingIds.push(res.body.id);
   });
 

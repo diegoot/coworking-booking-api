@@ -152,7 +152,7 @@ describe("DELETE /bookings/:id", () => {
     expect(res.status).toBe(403);
 
     const stored = await prisma.booking.findUnique({ where: { id: booking.id } });
-    expect(stored?.status).toBe(BookingStatus.PENDING);
+    expect(stored?.status).toBe(BookingStatus.CONFIRMED);
   });
 
   it("returns 404 when the booking does not exist", async () => {

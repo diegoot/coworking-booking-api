@@ -55,7 +55,9 @@ export async function createBooking(userId: string, input: CreateBookingInput): 
   }
 
   // `status` is intentionally omitted: it must keep the Prisma schema's
-  // PENDING default rather than being set explicitly here.
+  // CONFIRMED default rather than being set explicitly here. There's no
+  // approval workflow — the overlap check above is the only gate, so a
+  // booking is either rejected outright or confirmed immediately.
   return prisma.booking.create({
     data: {
       userId,

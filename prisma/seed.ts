@@ -95,11 +95,11 @@ async function seedBookings(
   // Non-overlapping slots per room, spread over the next few days.
   const bookings = [
     { user: userOne, room: roomA, day: 1, startHour: 9, endHour: 10, status: BookingStatus.CONFIRMED },
-    { user: userTwo, room: roomA, day: 1, startHour: 11, endHour: 12, status: BookingStatus.PENDING },
+    { user: userTwo, room: roomA, day: 1, startHour: 11, endHour: 12, status: BookingStatus.CANCELLED },
     { user: userTwo, room: roomB, day: 2, startHour: 14, endHour: 16, status: BookingStatus.CONFIRMED },
-    { user: userThree, room: roomB, day: 3, startHour: 9, endHour: 10, status: BookingStatus.PENDING },
+    { user: userThree, room: roomB, day: 3, startHour: 9, endHour: 10, status: BookingStatus.CANCELLED },
     { user: userThree, room: roomC, day: 2, startHour: 10, endHour: 11, status: BookingStatus.CONFIRMED },
-    { user: userOne, room: roomC, day: 4, startHour: 15, endHour: 17, status: BookingStatus.PENDING },
+    { user: userOne, room: roomC, day: 4, startHour: 15, endHour: 17, status: BookingStatus.CONFIRMED },
   ];
 
   const created = [];
