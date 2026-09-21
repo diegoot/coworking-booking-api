@@ -69,6 +69,7 @@ GET    /bookings/me                  (requires auth, own bookings only)
 GET    /bookings/:userId             (admin only, bookings for any user)
 POST   /bookings                     (requires auth, validates overlap)
 DELETE /bookings/:id                 (booking owner or admin only)
+GET    /users                        (admin only, no password field)
 ```
 
 ## Guidelines

@@ -1,0 +1,37 @@
+### Users module — manual requests (REST Client extension for VS Code)
+#
+# How to use:
+# 1. Install the "REST Client" extension (humao.rest-client) in VS Code.
+# 2. Open this file. Above each request block you'll see a small
+#    "Send Request" link — click it to fire that specific request.
+# 3. Make sure the API is running (npm run dev) before sending requests.
+# 4. baseUrl comes from the active REST Client environment (bottom-right
+#    of VS Code) — see .vscode/settings.json for "local" vs "production".
+
+# ---------------------------------------------------------------------------
+# Admin token setup (needed for GET /users below)
+# ---------------------------------------------------------------------------
+# There is no endpoint to register as ADMIN directly. Instead, run the seed
+# script to create/update an admin user from the ADMIN_SEED_* vars in .env:
+#   npm run prisma:seed
+# Then log in with those credentials via auth/auth.http (POST /auth/login,
+# using ADMIN_SEED_EMAIL/ADMIN_SEED_PASSWORD from .env) and paste the
+# returned accessToken below.
+@adminToken = replace-with-admin-token
+
+# Optional: a token from a regular (non-admin) user, used below to check
+# the 403 case. Get it the normal way via POST /auth/login.
+@userToken = replace-with-user-token
+
+### List all users (admin only)
+GET {{baseUrl}}/users
+Authorization: Bearer {{adminToken}}
+
+### Error case: list users without the Authorization header
+# No token at all — expect 401 Unauthorized.
+GET {{baseUrl}}/users
+
+### Error case: list users with a non-admin user's token
+# Valid token, but the user's role isn't ADMIN — expect 403 Forbidden.
+GET {{baseUrl}}/users
+Authorization: Bearer {{userToken}}

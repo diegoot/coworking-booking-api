@@ -108,6 +108,7 @@ src/
     auth/       # register, login, JWT middleware (authenticate, authorize)
     rooms/      # list/create rooms, availability
     bookings/   # list/create/cancel bookings
+    users/      # list users (admin only)
   shared/
     config/     # env validation, business-hours config
     errors/     # AppError + centralized error handler

@@ -4,6 +4,7 @@ import { errorHandler } from "./shared/errors/errorHandler.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { roomsRouter } from "./modules/rooms/rooms.routes.js";
 import { bookingsRouter } from "./modules/bookings/bookings.routes.js";
+import { usersRouter } from "./modules/users/users.routes.js";
 
 export function createApp(): Express {
   const app = express();
@@ -20,6 +21,7 @@ export function createApp(): Express {
   app.use("/auth", authRouter);
   app.use("/rooms", roomsRouter);
   app.use("/bookings", bookingsRouter);
+  app.use("/users", usersRouter);
 
   // Centralized error handler must be the last middleware mounted so
   // it catches errors from every route/middleware above it.
