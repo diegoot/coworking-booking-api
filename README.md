@@ -166,3 +166,9 @@ That's the only command you need to run. Two things happen automatically before 
 
 1. **Database creation**: `coworking_booking_test` is created by `docker/init-test-db.sh`, which Postgres runs automatically the first time the container starts with a fresh data volume (a built-in behavior of the official `postgres` Docker image).
 2. **Schema migration**: a Vitest `globalSetup` step runs `prisma migrate deploy` against `coworking_booking_test`, so it's always up to date with the latest schema. You never need to migrate the test database by hand.
+
+## Possible improvements
+
+Known gaps, left out of scope on purpose for this portfolio project:
+
+- **Neither creating nor cancelling a booking checks it against the current time.** `POST /bookings` accepts a `startTime` in the past as long as it's within business hours and doesn't overlap another booking, and `DELETE /bookings/:id` will cancel a booking regardless of whether its `endTime` already passed.
