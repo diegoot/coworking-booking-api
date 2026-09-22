@@ -67,7 +67,7 @@ POST   /rooms                        (admin only)
 GET    /rooms/:id/availability?date= (requires auth, free/busy slots for that day)
 GET    /bookings/me                  (requires auth, own bookings only)
 GET    /bookings?date=&roomId=&userId= (admin only, every filter optional/combinable, no filters = all bookings)
-POST   /bookings                     (requires auth, validates overlap)
+POST   /bookings                     (regular users only, admins can't book, validates overlap)
 DELETE /bookings/:id                 (booking owner or admin only)
 GET    /users                        (admin only, no password field)
 ```

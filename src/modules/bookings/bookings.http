@@ -87,6 +87,19 @@ Authorization: Bearer {{userToken}}
 # Error cases
 # ---------------------------------------------------------------------------
 
+### Error case: create a booking as an admin
+# Booking a room is a regular-user action — admins can't book.
+# Requires @adminToken and @roomId to be set above. Expect 403 Forbidden.
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "roomId": "{{roomId}}",
+  "startTime": "2026-09-20T10:00:00-03:00",
+  "endTime": "2026-09-20T11:00:00-03:00"
+}
+
 ### Error case: create a booking without the Authorization header
 # No token at all — expect 401 Unauthorized.
 POST {{baseUrl}}/bookings

@@ -141,6 +141,22 @@ describe("POST /bookings", () => {
     expect(res.status).toBe(401);
   });
 
+  it("returns 403 when the authenticated user is an admin", async () => {
+    const room = await setupRoom();
+    const { token } = await setupUser("ADMIN");
+
+    const res = await request(app)
+      .post("/bookings")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        roomId: room.id,
+        startTime: argentinaTime("10:00:00.000").toISOString(),
+        endTime: argentinaTime("11:00:00.000").toISOString(),
+      });
+
+    expect(res.status).toBe(403);
+  });
+
   it("returns 422 when roomId is missing", async () => {
     const { token } = await setupUser();
 
