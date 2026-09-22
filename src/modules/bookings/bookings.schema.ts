@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isoDateSchema } from "../../shared/schemas/isoDate.js";
 
 // Only shape/format is validated here (valid UUID room id, valid ISO
 // datetimes, endTime strictly after startTime). Anything data-dependent
@@ -16,3 +17,15 @@ export const createBookingSchema = z
   });
 
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
+
+// All filters are optional and combinable (AND'd together). No filters
+// at all means "every booking" — this endpoint is admin-only (see
+// bookings.routes.ts), so that's an intentional capability, not an
+// oversight.
+export const listBookingsQuerySchema = z.object({
+  date: isoDateSchema.optional(),
+  roomId: z.string().uuid("roomId must be a valid UUID").optional(),
+  userId: z.string().uuid("userId must be a valid UUID").optional(),
+});
+
+export type ListBookingsQuery = z.infer<typeof listBookingsQuerySchema>;

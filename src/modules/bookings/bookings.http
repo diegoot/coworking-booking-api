@@ -36,9 +36,9 @@
 # path)" below, once you've sent that request.
 @bookingId = replace-with-booking-id
 
-# userId: the id of the logged-in user (@userToken), used below to test
-# GET /bookings/:userId as a non-admin (should be forbidden). You can get
-# it by decoding the JWT, or from the register/login response body.
+# userId: the id of the logged-in user (@userToken), used below as a
+# filter for GET /bookings and to test the non-admin 403 case. You can
+# get it by decoding the JWT, or from the register/login response body.
 @userId = replace-with-user-id
 
 ### Create a booking (happy path)
@@ -61,9 +61,20 @@ Authorization: Bearer {{userToken}}
 GET {{baseUrl}}/bookings/me
 Authorization: Bearer {{userToken}}
 
-### Get bookings for a given user (admin only)
+### List every booking, no filters (admin only)
+# Requires @adminToken to be set above.
+GET {{baseUrl}}/bookings
+Authorization: Bearer {{adminToken}}
+
+### List bookings filtered by userId (admin only)
 # Requires @adminToken and @userId to be set above.
-GET {{baseUrl}}/bookings/{{userId}}
+GET {{baseUrl}}/bookings?userId={{userId}}
+Authorization: Bearer {{adminToken}}
+
+### List bookings filtered by roomId and date (admin only)
+# Requires @adminToken and @roomId to be set above. Filters are
+# combinable — mix and match date/roomId/userId as needed.
+GET {{baseUrl}}/bookings?roomId={{roomId}}&date=2026-09-20
 Authorization: Bearer {{adminToken}}
 
 ### Cancel a booking (happy path — owner cancels their own booking)
@@ -184,14 +195,24 @@ Authorization: Bearer {{userToken}}
   "endTime": "2026-09-20T10:00:00-03:00"
 }
 
-### Error case: get bookings for a user without the Authorization header
+### Error case: list bookings without the Authorization header
 # No token at all — expect 401 Unauthorized.
-GET {{baseUrl}}/bookings/{{userId}}
+GET {{baseUrl}}/bookings
 
-### Error case: get bookings for a user with a non-admin token
+### Error case: list bookings with a non-admin token
 # Valid token, but the user's role isn't ADMIN — expect 403 Forbidden.
-GET {{baseUrl}}/bookings/{{userId}}
+GET {{baseUrl}}/bookings
 Authorization: Bearer {{userToken}}
+
+### Error case: list bookings with an invalid date format
+# Expect 422 Unprocessable Entity — date must be YYYY-MM-DD.
+GET {{baseUrl}}/bookings?date=20-09-2026
+Authorization: Bearer {{adminToken}}
+
+### Error case: list bookings with a roomId that isn't a valid UUID
+# Expect 422 Unprocessable Entity.
+GET {{baseUrl}}/bookings?roomId=not-a-uuid
+Authorization: Bearer {{adminToken}}
 
 ### Error case: cancel someone else's booking without being admin
 # @userToken belongs to a different user than the one who owns @bookingId —

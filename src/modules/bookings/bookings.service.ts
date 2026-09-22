@@ -1,18 +1,44 @@
-import { BookingStatus, type Booking } from "@prisma/client";
+import { BookingStatus, Prisma, type Booking } from "@prisma/client";
+import { fromZonedTime } from "date-fns-tz";
 import { prisma } from "../../shared/db/prisma.js";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "../../shared/errors/AppError.js";
 import { isWithinBusinessHours } from "../../shared/utils/businessHours.js";
+import { BUSINESS_TIMEZONE } from "../../shared/config/businessHours.js";
 import type { AuthUser } from "../../shared/types/auth.js";
-import type { CreateBookingInput } from "./bookings.schema.js";
+import type { CreateBookingInput, ListBookingsQuery } from "./bookings.schema.js";
 
-// Used both by GET /bookings/me (userId = req.user.id) and by
-// GET /bookings/:userId (admin only, userId = the requested user). The
-// query itself doesn't need to know which route called it — the
-// authorization difference is handled entirely in the routes/middleware
-// layer (authenticate vs authenticate + authorize("ADMIN")).
+// GET /bookings/me only — always scoped to the caller's own bookings.
 export async function listBookingsForUser(userId: string): Promise<Booking[]> {
   return prisma.booking.findMany({
     where: { userId },
+    orderBy: { startTime: "asc" },
+  });
+}
+
+// GET /bookings (admin only) — every filter is optional and AND'd
+// together; no filters returns every booking in the system.
+export async function listBookings(filters: ListBookingsQuery): Promise<Booking[]> {
+  const where: Prisma.BookingWhereInput = {};
+
+  if (filters.roomId) {
+    where.roomId = filters.roomId;
+  }
+
+  if (filters.userId) {
+    where.userId = filters.userId;
+  }
+
+  if (filters.date) {
+    // Day boundaries in the business timezone (Argentina), same approach
+    // as rooms.service.getRoomAvailability — safe because business rule 1
+    // (AGENTS.md) guarantees a booking never spans midnight, so every
+    // booking on this calendar day falls fully inside [dayStart, dayEnd].
+    where.startTime = { gte: fromZonedTime(`${filters.date}T00:00:00.000`, BUSINESS_TIMEZONE) };
+    where.endTime = { lte: fromZonedTime(`${filters.date}T23:59:59.999`, BUSINESS_TIMEZONE) };
+  }
+
+  return prisma.booking.findMany({
+    where,
     orderBy: { startTime: "asc" },
   });
 }

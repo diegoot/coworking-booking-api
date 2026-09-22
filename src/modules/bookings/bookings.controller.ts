@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import type { ZodType } from "zod";
-import { createBookingSchema } from "./bookings.schema.js";
-import { cancelBooking, createBooking, listBookingsForUser } from "./bookings.service.js";
+import { createBookingSchema, listBookingsQuerySchema } from "./bookings.schema.js";
+import { cancelBooking, createBooking, listBookings, listBookingsForUser } from "./bookings.service.js";
 import { ValidationError } from "../../shared/errors/AppError.js";
 import type { AuthenticatedRequest } from "../../shared/types/auth.js";
 
@@ -30,9 +30,10 @@ export async function getMyBookings(req: Request, res: Response, next: NextFunct
   }
 }
 
-export async function getBookingsByUserId(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function getBookings(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const bookings = await listBookingsForUser(req.params.userId as string);
+    const filters = parse(listBookingsQuerySchema, req.query);
+    const bookings = await listBookings(filters);
     res.status(200).json(bookings);
   } catch (err) {
     next(err);

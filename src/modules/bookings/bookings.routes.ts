@@ -1,13 +1,14 @@
 import { Router } from "express";
-import { deleteBooking, getBookingsByUserId, getMyBookings, postBooking } from "./bookings.controller.js";
+import { deleteBooking, getBookings, getMyBookings, postBooking } from "./bookings.controller.js";
 import { authenticate, authorize } from "../auth/auth.middleware.js";
 
 export const bookingsRouter = Router();
 
-// Order matters: "/me" must be registered before "/:userId", otherwise
-// Express would match "me" as a :userId param on the admin route.
 bookingsRouter.get("/me", authenticate, getMyBookings);
-bookingsRouter.get("/:userId", authenticate, authorize("ADMIN"), getBookingsByUserId);
+// Admin-only: lists every booking, optionally filtered by date/roomId/
+// userId (all combinable query params, AND'd together). No filters
+// returns every booking in the system.
+bookingsRouter.get("/", authenticate, authorize("ADMIN"), getBookings);
 bookingsRouter.post("/", authenticate, postBooking);
 // Ownership-or-admin can't be split into two separate routes cleanly
 // (unlike the GET endpoints above), so the check is done inside the
