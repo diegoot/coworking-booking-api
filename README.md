@@ -172,3 +172,22 @@ That's the only command you need to run. Two things happen automatically before 
 Known gaps, left out of scope on purpose for this portfolio project:
 
 - **Neither creating nor cancelling a booking checks it against the current time.** `POST /bookings` accepts a `startTime` in the past as long as it's within business hours and doesn't overlap another booking, and `DELETE /bookings/:id` will cancel a booking regardless of whether its `endTime` already passed.
+- **Let admins set a room image.** No `imageUrl` field on the Room
+  model/schema yet — `POST /rooms` would need to accept it (and
+  probably a file upload endpoint, or just a URL field for simplicity).
+- **Let admins define per-room amenities.** No amenities support on the
+  Room model/schema yet. Should be a closed catalog (e.g. an
+  `amenities` table with `id`/`key`/`label`), not a free-form
+  `string[]` — a curated set keeps values consistent (no "Wifi" vs
+  "WiFi" vs "wi-fi" duplicates) and lets the frontend map each known
+  key to a fixed icon deterministically, the same way it already maps
+  its current hardcoded amenity list. This needs two things:
+  - Endpoints for the catalog itself: `GET /amenities` public (the
+    frontend needs it to render amenities for any room, not just to
+    admins), `POST/DELETE /amenities` admin only, so an admin UI can
+    manage the available list (add a new amenity, remove one no longer
+    offered).
+  - Each `Room` referencing a subset of that catalog (by id or key)
+    rather than storing arbitrary text — `POST /rooms`/`PATCH
+    /rooms/:id` accepting the selected amenity ids, and
+    `GET /rooms`/`GET /rooms/:id` returning them.
